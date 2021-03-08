@@ -1,0 +1,72 @@
+version: '3.6'
+services:
+  kong-api-gateway:
+    image: docker-registry.urtica.pl/kong-custom:2.3.0-1
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1578M
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: postgres-db
+      KONG_PG_DATABASE: kong
+      KONG_PG_PASSWORD: kong
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PLUGINS: uma-auth-plugin,request-transformer,basic-auth,acl
+      KONG_NGINX_WORKER_PROCESSES: 5
+      KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 350k
+    ports:
+      - 8000:8000
+    networks:
+      - internal
+
+  kong-api-gateway-manager:
+    image: pantsel/konga:0.14.9
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 350M
+    ports:
+      - 10007:1337
+    environment:
+      DB_ADAPTER: postgres
+      DB_HOST: postgres-db
+      DB_DATABASE: konga
+      DB_USER: konga
+      DB_PASSWORD: konga
+      NODE_ENV: production
+    networks:
+      - internal
+
+  postgres-db:
+    image: postgres:11
+    deploy:
+      placement:
+        constraints:
+          - node.labels.test-gateway-db==true  
+    environment:
+      TZ: Europe/Warsaw
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_DATABASES: kong,konga,postgres
+    configs:
+      - source: postgres-multiple-databases-script
+        target: /docker-entrypoint-initdb.d/postgres-init-script.sh
+        mode: 0555
+    volumes:
+      - postgres-db-data:/var/lib/postgresql/data 
+    networks:
+      - internal    
+
+configs:
+  postgres-multiple-databases-script:
+    file: ./multiple-databases.sh
+networks:
+  internal:
+    driver: overlay
+volumes:
+  postgres-db-data:
