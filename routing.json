@@ -1,32 +1,19 @@
 {
   "config": {
     "kongHost": "localhost",
-    "kongPort": 2020,
+    "kongPort": 9635,
     "kongUser": "admin"
   },
   "routing": [
     {
-      "serviceName": "kf-pharmacy-assist-dev",
-      "url": "http://pharmacy-web-dev:8080",
+      "serviceName": "test-service-go",
+      "url": "http://test-service-go:8080",
       "routes": [
         {
-          "routeName": "kf-pharmacy-assistant-spa-dev",
-          "path": "/pharmacy-assistant",
+          "routeName": "test-route-go",
+          "path": "/test-path",
           "methods": [
-            "GET"
-          ]
-        }
-      ]
-    },
-    {
-      "serviceName": "notification-service",
-      "url": "http://notification-dev:8080",
-      "routes": [
-        {
-          "routeName": "kf-notification-service-get-dev",
-          "path": "/notification-service(?<path>/api/v1/notifications/[a-zA-z0-9-]+)",
-          "methods": [
-            "GET"
+            "GET", "POST"
           ]
         }
       ]

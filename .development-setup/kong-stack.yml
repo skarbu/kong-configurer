@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   kong-api-gateway:
-    image: docker-registry.urtica.pl/kong-custom:2.3.0-1
+    image: kong:2.3.3-alpine
     deploy:
       replicas: 1
       resources:
@@ -44,10 +44,6 @@ services:
 
   postgres-db:
     image: postgres:11
-    deploy:
-      placement:
-        constraints:
-          - node.labels.test-gateway-db==true  
     environment:
       TZ: Europe/Warsaw
       POSTGRES_PASSWORD: postgres
@@ -58,7 +54,7 @@ services:
         target: /docker-entrypoint-initdb.d/postgres-init-script.sh
         mode: 0555
     volumes:
-      - postgres-db-data:/var/lib/postgresql/data 
+      - postgres-kong-volum:/var/lib/postgresql/data
     networks:
       - internal    
 
@@ -69,4 +65,4 @@ networks:
   internal:
     driver: overlay
 volumes:
-  postgres-db-data:
+  postgres-kong-volum:

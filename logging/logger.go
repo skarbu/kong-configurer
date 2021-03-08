@@ -8,10 +8,8 @@ func FailOnError(err error, msg string) {
 	}
 }
 
-func LogOnError(err error, msg string) {
-	if err != nil {
-		log.Printf("%s : %s \n", msg, err)
-	}
+func LogError(err error, msg string) {
+	log.Printf("%s : %s \n", msg, err)
 }
 
 func FailOnErrors(errs []error, msg string) {
