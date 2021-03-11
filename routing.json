@@ -1,6 +1,6 @@
 {
   "config": {
-    "kongHost": "localhost",
+    "kongHost": "http://localhost",
     "kongPort": 9635,
     "kongUser": "admin"
   },
@@ -8,12 +8,14 @@
     {
       "serviceName": "test-service-go",
       "url": "http://test-service-go:8080",
+      "removeAllRoutesBeforeMigration" : true,
       "routes": [
         {
-          "routeName": "test-route-go",
+          "operation" : "ADD",
+          "routeName": "new-route-go_changed",
           "path": "/test-path",
           "methods": [
-            "GET", "POST"
+            "GET", "DELETE"
           ]
         }
       ]

@@ -3,10 +3,6 @@ module kong-configurer
 go 1.16
 
 require (
-	github.com/google/go-querystring v1.0.0 // indirect
-	github.com/kevholditch/gokong v6.0.0+incompatible // indirect
-	github.com/parnurzeal/gorequest v0.2.16 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
-	moul.io/http2curl v1.0.0 // indirect
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 )
