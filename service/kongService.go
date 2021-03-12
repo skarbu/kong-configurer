@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"kong-configurer/converter"
 	. "kong-configurer/logging"
 	"kong-configurer/model"
 	"net/http"
+	"reflect"
 )
 
 var (
@@ -29,59 +31,88 @@ func NewKongService(cfg model.Config, kongAdminPassword string) kongService {
 }
 
 func (ks kongService) ProcessMigration() {
-	for _, r := range ks.cfg.Routing {
-		ks.ensureService(r)
-		if r.RemoveAllRoutes {
-			ks.removeAllRoutesFromService(r.ServiceName)
-		}
-		ks.ensureRoutes(r.Routes, r.ServiceName)
+	for _, s := range ks.cfg.Routing {
+		ks.ensureService(s)
+		ks.ensureRoutes(s.Routes, s.ServiceName)
 	}
 }
 
 func (ks kongService) ensureService(r model.Routing) {
-	serviceCfgUrl := fmt.Sprintf("%s/services", ks.rootPath)
-	data := model.ServiceRequest{
+	exist, modified := ks.checkService(r)
+	switch exist {
+	case true:
+		if modified {
+			ks.modifyService(r)
+		} else {
+			LogMsgToFile(fmt.Sprintf("Service `%s` already exist and does not changed", r.ServiceName))
+		}
+	case false:
+		ks.addService(r)
+	}
+}
+
+func (ks kongService) addService(r model.Routing) {
+	addServiceUrl := fmt.Sprintf("%s/services", ks.rootPath)
+	data := model.AddServiceRequest{
 		Name: r.ServiceName,
 		Url:  r.URL,
 	}
 	body, _ := json.Marshal(data)
-	request, _ := http.NewRequest(http.MethodPost, serviceCfgUrl, bytes.NewBuffer(body))
+	request, _ := http.NewRequest(http.MethodPost, addServiceUrl, bytes.NewBuffer(body))
 	ks.doWithAuth(request)
 }
 
-func (ks kongService) ensureRoutes(routes []model.Route, serviceName string) {
-	for _, r := range routes {
-		switch op := r.Operation; op {
-		case model.OperationAdd:
-			ks.addRoute(r, serviceName)
-		case model.OperationRemove:
-			ks.removeRoute(r.RouteName, serviceName)
+func (ks kongService) modifyService(r model.Routing) {
+	modifyServiceUrl := fmt.Sprintf("%s/services/%s", ks.rootPath, r.ServiceName)
+	data := model.AddServiceRequest{
+		Name: r.ServiceName,
+		Url:  r.URL,
+	}
+	body, _ := json.Marshal(data)
+	request, _ := http.NewRequest(http.MethodPatch, modifyServiceUrl, bytes.NewBuffer(body))
+	ks.doWithAuth(request)
+}
+
+func (ks kongService) ensureRoutes(requestedRoutes []model.AddRouteRequest, serviceName string) {
+	existingRoutes :=
+		converter.ToAddRouteRequest(ks.getAllRouteNamesForService(serviceName)...)
+	for _, existingRoute := range existingRoutes {
+		if contains, _ := containRoute(requestedRoutes, existingRoute); !contains {
+			ks.removeRoute(existingRoute.Name, serviceName)
+		}
+	}
+	for _, requestedRoute := range requestedRoutes {
+		contains, modified := containRoute(existingRoutes, requestedRoute)
+		switch contains {
+		case false:
+			ks.addRoute(requestedRoute, serviceName)
+		case true:
+			if modified {
+				ks.modifyRoute(requestedRoute, serviceName)
+			} else {
+				LogMsgToFile(fmt.Sprintf("Route `%s` already exist and does not changed", requestedRoute.Name))
+			}
 		}
 	}
 }
 
-func (ks kongService) addRoute(r model.Route, serviceName string) {
-	routeCfgUrl := fmt.Sprintf("%s/services/%s/routes", ks.rootPath, serviceName)
-	paths := make([]string, 1)
-	paths[0] = r.Path
-	data := model.AddRouteRequest{
-		Name:         r.RouteName,
-		Paths:        paths,
-		PreserveHost: false,
-		StripPath:    false,
-		Methods:      r.Methods,
+func containRoute(routes []model.AddRouteRequest, expectingRouteName model.AddRouteRequest) (contain bool, modified bool) {
+	for _, actualRoute := range routes {
+		if actualRoute.Name == expectingRouteName.Name {
+			if reflect.DeepEqual(actualRoute, expectingRouteName) {
+				return true, false
+			}
+			return true, true
+		}
 	}
-	body, _ := json.Marshal(data)
-	request, _ := http.NewRequest(http.MethodPost, routeCfgUrl, bytes.NewBuffer(body))
-	ks.doWithAuth(request)
+	return false, true
 }
 
-func (ks kongService) removeAllRoutesFromService(serviceName string) {
-	routeNames := ks.getAllRouteNamesForService(serviceName)
-	for _, n := range routeNames {
-		ks.removeRoute(n, serviceName)
-	}
-
+func (ks kongService) addRoute(addRouteBody model.AddRouteRequest, serviceName string) {
+	routeCfgUrl := fmt.Sprintf("%s/services/%s/routes", ks.rootPath, serviceName)
+	body, _ := json.Marshal(addRouteBody)
+	request, _ := http.NewRequest(http.MethodPost, routeCfgUrl, bytes.NewBuffer(body))
+	ks.doWithAuth(request)
 }
 
 func (ks kongService) removeRoute(routeName string, serviceName string) {
@@ -90,18 +121,31 @@ func (ks kongService) removeRoute(routeName string, serviceName string) {
 	ks.doWithAuth(request)
 }
 
-func (ks kongService) getAllRouteNamesForService(serviceName string) (routesNames []string) {
+func (ks kongService) modifyRoute(addRouteBody model.AddRouteRequest, serviceName string) {
+	modifyRouteUrl := fmt.Sprintf("%s/services/%s/routes/%s", ks.rootPath, serviceName, addRouteBody.Name)
+	body, _ := json.Marshal(addRouteBody)
+	request, _ := http.NewRequest(http.MethodPatch, modifyRouteUrl, bytes.NewBuffer(body))
+	ks.doWithAuth(request)
+}
+
+func (ks kongService) getService(routing model.Routing) (service *model.KongServiceModel) {
+	getServiceUrl := fmt.Sprintf("%s/services/%s", ks.rootPath, routing.ServiceName)
+	request, _ := http.NewRequest(http.MethodGet, getServiceUrl, nil)
+	rawResponse := ks.doWithAuth(request)
+	var serviceResponse model.KongServiceModel
+	err := json.NewDecoder(rawResponse.Body).Decode(&serviceResponse)
+	LogOnError(err, "Error during parsing json")
+	return &serviceResponse
+}
+
+func (ks kongService) getAllRouteNamesForService(serviceName string) (routes []model.KongRouteModel) {
 	getAllRoutesUrl := fmt.Sprintf("%s/services/%s/routes", ks.rootPath, serviceName)
 	request, _ := http.NewRequest(http.MethodGet, getAllRoutesUrl, nil)
 	rawResponse := ks.doWithAuth(request)
-	var routeResponse model.GetRouteResponse
+	var routeResponse model.GetRoutesResponse
 	err := json.NewDecoder(rawResponse.Body).Decode(&routeResponse)
 	LogOnError(err, "Error during parsing json")
-	routesNames = make([]string, len(routeResponse.Data))
-	for i, r := range routeResponse.Data {
-		routesNames[i] = r.Name
-	}
-	return
+	return routeResponse.Data
 }
 
 func (ks kongService) doWithAuth(request *http.Request) (response *http.Response) {
@@ -113,4 +157,20 @@ func (ks kongService) doWithAuth(request *http.Request) (response *http.Response
 	}
 	LogToFile(request, response)
 	return
+}
+
+func (ks kongService) checkService(requestService model.Routing) (exist bool, modify bool) {
+	existingService := ks.getService(requestService)
+	if existingService == nil {
+		return false, true
+	}
+	if isServiceModify(existingService, requestService) {
+		return true, true
+	}
+	return true, false
+}
+
+func isServiceModify(existingService *model.KongServiceModel, requestedService model.Routing) bool {
+	existingURL := fmt.Sprintf("%s://%s:%d%s", existingService.Protocol, existingService.Host, existingService.Port, existingService.Path)
+	return requestedService.URL != existingURL
 }

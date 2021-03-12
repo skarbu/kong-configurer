@@ -34,13 +34,13 @@ kong-configurer {configFile}
     {
       "serviceName": "{service name}",
       "url": "{service root url}",
-      "removeAllRoutesBeforeMigration" : true, // if true - remove all routes before add new ones
       "routes": [
         {
-          "operation" : "{operation}", // operation to execute on route. Allowed: ADD, REMOVE
-          "routeName": "{route-name}",
-          "path": "{route path}",
+          "name": "{route-name}",
+          "paths": [ "{route path}" ],
           "methods": [ "{methods}" ] // list of methods for routed path
+          "preserve_host" : false,
+          "strip_path" : false
         }
       ]
     }
@@ -49,6 +49,5 @@ kong-configurer {configFile}
 ```
 
 ### TODO
-- feature of modify existing route
 - work with bigger set of routes (kong rest api provide pagination)
 

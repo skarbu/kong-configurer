@@ -17,7 +17,9 @@ func main() {
 	cfg := loadConfigFromFile()
 	kongPassword := getPasswordPrompt(cfg.Global.KongUser)
 	kongService := service.NewKongService(cfg, kongPassword)
+	fmt.Print("processing... \n")
 	kongService.ProcessMigration()
+	fmt.Print("done")
 }
 
 func loadConfigFromFile() (cfg model.Config) {
@@ -34,7 +36,7 @@ func loadConfigFromFile() (cfg model.Config) {
 }
 
 func getPasswordPrompt(usr string) string {
-	fmt.Printf("Enter Password for kong user: '%s' \n", usr)
+	fmt.Printf("Enter password for kong user: '%s' \n", usr)
 	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
 	FailOnError(err, "error during reading password")
 	return string(bytePassword)

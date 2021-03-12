@@ -46,6 +46,17 @@ func LogToFile(request *http.Request, response *http.Response) {
 		request.URL.Path,
 		response.Status,
 		bodyString)
+	appendToFile(log)
+}
+
+func LogMsgToFile(msg string) {
+	log := fmt.Sprintf("%s: \n %s \n",
+		prettyTimeStamp(),
+		msg)
+	appendToFile(log)
+}
+
+func appendToFile(log string) {
 	f, err := os.OpenFile(logFileName,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	LogOnError(err, "error during creating log file")
