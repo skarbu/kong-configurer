@@ -56,6 +56,15 @@ func LogMsgToFile(msg string) {
 	appendToFile(log)
 }
 
+func FatalInvalidArgs() {
+	msg := "\nInvalid connection arguments pass to application. Ensure you run application with all required arguments\n" +
+		"-u {user} - kong username with admin privileges \n" +
+		"-p {port} - password (optional) \n" +
+		"-h {host} - kong host \n" +
+		"-f {configfile} - relative path to json config file \n"
+	log.Fatal(msg)
+}
+
 func appendToFile(log string) {
 	f, err := os.OpenFile(logFileName,
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

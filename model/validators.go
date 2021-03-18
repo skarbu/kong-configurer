@@ -2,18 +2,22 @@ package model
 
 import (
 	"errors"
+	logger "kong-configurer/logging"
 )
 
 func (c Config) Validate() (errs []error) {
 	errs = make([]error, 0)
-	if c.Global.KongHost == "" {
-		errs = append(errs, errors.New("kong host cannot be empty"))
+	if c.Connection.KongPath == "" {
+		logger.LogOnError(errors.New("invalid configuration"), "kong path cannot be empty")
+		logger.FatalInvalidArgs()
 	}
-	if c.Global.KongPort == 0 {
-		errs = append(errs, errors.New("kong host cannot be empty"))
+	if c.Connection.KongUser == "" {
+		logger.LogOnError(errors.New("invalid configuration"), "kong user cannot be empty")
+		logger.FatalInvalidArgs()
 	}
-	if c.Global.KongUser == "" {
-		errs = append(errs, errors.New("kong user cannot be empty"))
+	if c.Connection.KongPassword == "" {
+		logger.LogOnError(errors.New("invalid configuration"), "kong password cannot be empty")
+		logger.FatalInvalidArgs()
 	}
 	if len(c.Routing) == 0 {
 		errs = append(errs, errors.New("no routing defined in file"))

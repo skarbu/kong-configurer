@@ -21,12 +21,11 @@ type kongService struct {
 	kongAdminPassword string
 }
 
-func NewKongService(cfg model.Config, kongAdminPassword string) kongService {
-	rootPath := fmt.Sprintf("%s:%d", cfg.Global.KongHost, cfg.Global.KongPort)
+func NewKongService(cfg model.Config) kongService {
 	return kongService{
 		cfg:               cfg,
-		rootPath:          rootPath,
-		kongAdminPassword: kongAdminPassword,
+		rootPath:          cfg.Connection.KongPath,
+		kongAdminPassword: cfg.Connection.KongPassword,
 	}
 }
 
@@ -149,7 +148,7 @@ func (ks kongService) getAllRouteNamesForService(serviceName string) (routes []m
 }
 
 func (ks kongService) doWithAuth(request *http.Request) (response *http.Response) {
-	request.SetBasicAuth(ks.cfg.Global.KongUser, ks.kongAdminPassword)
+	request.SetBasicAuth(ks.cfg.Connection.KongUser, ks.kongAdminPassword)
 	request.Header.Set("Content-Type", "application/json")
 	response, err := client.Do(request)
 	if err != nil {

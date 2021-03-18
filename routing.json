@@ -1,9 +1,4 @@
 {
-  "config": {
-    "kongHost": "localhost",
-    "kongPort": 9635,
-    "kongUser": "admin"
-  },
   "routing": [
     {
       "serviceName": "test-service-go",

@@ -12,24 +12,28 @@ batch operations including:
 
 ### How to use it?
 
-```go run kong-configurer.go {configFile}```
-eg.
-```go run kong-configurer.go routing.json```
+```go run kong-configurer.go -f {configFile} -h {kongHost}  -u {user} -p {password}```
 
-or with build binaries
+  -f string
+        relative path to json config file
+  -h string
+        kong host with port
+  -p string
+        password for kong user
+  -u string
+        kong user with admin privileges
+
+param -p is optional, if not passed app ask for password with blind password prompt
+
+You can also build and run app as binaries
 ```
 go build kong-configurer.go
-kong-configurer {configFile}
+kong-configurer  -f {configFile} -h {kongHost}  -u {user} -p {password}
 ```
 
 ### Config file structure
 ```
 {
-  "config": {
-    "kongHost": "{host}",
-    "kongPort": {port},
-    "kongUser": "{user with admin role}"
-  },
   "routing": [
     {
       "serviceName": "{service name}",
@@ -38,7 +42,7 @@ kong-configurer {configFile}
         {
           "name": "{route-name}",
           "paths": [ "{route path}" ],
-          "methods": [ "{methods}" ] // list of methods for routed path
+          "methods": [ "{methods}" ] // list of methods for routed path: POST, GET etc.
           "preserve_host" : false,
           "strip_path" : false
         }
