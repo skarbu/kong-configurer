@@ -12,6 +12,24 @@
           ],
           "preserve_host" : false,
           "strip_path" : false
+        },
+        {
+          "name": "new-rout-go-2",
+          "paths": ["/path-2"],
+          "methods": [
+            "GET"
+          ],
+          "preserve_host" : false,
+          "strip_path" : false
+        },
+        {
+          "name": "new-rout-go-3",
+          "paths": ["/path-3"],
+          "methods": [
+            "GET"
+          ],
+          "preserve_host" : false,
+          "strip_path" : false
         }
       ]
     }

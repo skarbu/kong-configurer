@@ -160,7 +160,7 @@ func (ks kongService) doWithAuth(request *http.Request) (response *http.Response
 
 func (ks kongService) checkService(requestService model.Routing) (exist bool, modify bool) {
 	existingService := ks.getService(requestService)
-	if existingService == nil {
+	if existingService.ID == "" {
 		return false, true
 	}
 	if isServiceModify(existingService, requestService) {
