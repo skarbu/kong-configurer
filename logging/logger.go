@@ -82,3 +82,8 @@ func rawTimestamp() string {
 func prettyTimeStamp() string {
 	return time.Now().Format(time.RFC3339)
 }
+
+func TimeTrack(start time.Time, operationName string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", operationName, elapsed)
+}

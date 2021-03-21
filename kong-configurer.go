@@ -11,6 +11,7 @@ import (
 	"kong-configurer/model"
 	"kong-configurer/service"
 	"syscall"
+	"time"
 )
 
 var (
@@ -28,6 +29,7 @@ func init() {
 	flag.Parse()
 }
 func main() {
+	defer TimeTrack(time.Now(), "migration")
 	cfg := loadConfigFromFile()
 	cfg.Connection = loadConnectionCfgFromArgs()
 	cfg.Connection.KongPassword = getPassword(cfg.Connection.KongUser)
@@ -36,7 +38,7 @@ func main() {
 	kongService := service.NewKongService(cfg)
 	fmt.Print("processing... \n")
 	kongService.ProcessMigration()
-	fmt.Print("done")
+	fmt.Print("done\n")
 }
 
 func loadConnectionCfgFromArgs() model.ConnectionConfig {
