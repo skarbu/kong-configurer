@@ -7,6 +7,7 @@ Batch operations including:
 
 - add services
 - add/remove/modify routes
+- add plugins on service and route level
 
 ### How to use it?
 
@@ -32,6 +33,16 @@ kong-configurer  -f {configFile} -h {kongHost}  -u {user} -p {password}
     {
       "serviceName": "{service name}",
       "url": "{service root url}",
+      "plugins": [
+              {
+                "name": "{pluginName}",
+                "consumer": {consumerName},
+                "protocols": [ "{protocol}"], // e.g. [ "http" ]
+                "config": {
+                //plugin config
+                }
+              }
+            ],
       "routes": [
         {
           "name": "{route-name}",
@@ -39,6 +50,16 @@ kong-configurer  -f {configFile} -h {kongHost}  -u {user} -p {password}
           "methods": [ "{methods}" ] // list of methods for routed path: POST, GET etc.
           "preserve_host" : false,
           "strip_path" : false
+           "plugins": [
+                        {
+                          "name": "{pluginName}",
+                          "consumer": {consumerName},
+                          "protocols": [ "{protocol}"], // e.g. [ "http" ]
+                          "config": {
+                          //plugin config
+                          }
+                        }
+                      ],
         }
       ]
     }
@@ -47,6 +68,5 @@ kong-configurer  -f {configFile} -h {kongHost}  -u {user} -p {password}
 ```
 
 ### TODO
-- support for plugins configuration
 - work with bigger set of routes (kong rest api provide pagination)
 

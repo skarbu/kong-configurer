@@ -3,33 +3,92 @@
     {
       "serviceName": "test-service-go",
       "url": "http://test-service-go:8080",
+      "plugins": [
+        {
+          "name": "request-transformer",
+          "consumer": null,
+          "protocols": [
+            "http",
+            "https"
+          ],
+          "config": {
+            "http_method": null,
+            "remove": {
+              "querystring": [],
+              "headers": [],
+              "body": []
+            },
+            "replace": {
+              "querystring": [],
+              "headers": [],
+              "uri": null,
+              "body": []
+            },
+            "add": {
+              "querystring": [],
+              "headers": [],
+              "body": []
+            },
+            "append": {
+              "querystring": [],
+              "headers": [],
+              "body": []
+            },
+            "rename": {
+              "querystring": [],
+              "headers": [],
+              "body": []
+            }
+          }
+        }
+      ],
       "routes": [
         {
           "name": "new-route-go",
-          "paths": ["/path"],
-          "methods": [
-            "GET", "DELETE"
+          "paths": [
+            "/path"
           ],
-          "preserve_host" : false,
-          "strip_path" : false
+          "methods": [
+            "GET",
+            "DELETE"
+          ],
+          "preserve_host": false,
+          "strip_path": false,
+          "plugins": [
+            {
+              "name": "uma-auth-plugin",
+              "consumer": null,
+              "protocols": [
+                "http",
+                "https"
+              ],
+              "config": {
+                "scopesallowed": null
+              }
+            }
+          ]
         },
         {
           "name": "new-rout-go-2",
-          "paths": ["/path-2"],
+          "paths": [
+            "/path-2"
+          ],
           "methods": [
             "GET"
           ],
-          "preserve_host" : false,
-          "strip_path" : false
+          "preserve_host": false,
+          "strip_path": false
         },
         {
           "name": "new-rout-go-3",
-          "paths": ["/path-3"],
+          "paths": [
+            "/path-3"
+          ],
           "methods": [
             "GET"
           ],
-          "preserve_host" : false,
-          "strip_path" : false
+          "preserve_host": false,
+          "strip_path": false
         }
       ]
     }

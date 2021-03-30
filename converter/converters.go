@@ -1,17 +1,19 @@
 package converter
 
-import "kong-configurer/model"
+import (
+	"fmt"
+)
 
-func ToAddRouteRequest(r ...model.KongRouteModel) []model.AddRouteRequest {
-	routes := make([]model.AddRouteRequest, len(r))
-	for i, r := range r {
-		routes[i] = model.AddRouteRequest{
-			Name:         r.Name,
-			Paths:        r.Paths,
-			PreserveHost: r.PreserveHost,
-			StripPath:    r.StripPath,
-			Methods:      r.Methods,
-		}
+func StrToStr(pointer *string) string {
+	if pointer == nil {
+		return ""
 	}
-	return routes
+	return *pointer
+}
+
+func IntToStr(pointer *int) string {
+	if pointer == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *pointer)
 }

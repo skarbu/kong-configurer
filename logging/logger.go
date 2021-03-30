@@ -35,17 +35,17 @@ func FailOnErrors(errs []error, msg string) {
 	}
 }
 
-func LogToFile(request *http.Request, response *http.Response) {
-	body, _ := ioutil.ReadAll(response.Body)
+func LogToFile(request *http.Request, response *http.Response, requestBody string) {
+	responseBody, _ := ioutil.ReadAll(response.Body)
 	response.Body.Close()
-	response.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	bodyString := string(body)
-	log := fmt.Sprintf("%s: \n request: %s %s \n response status: %s  \n response body: %s \n",
+	response.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	log := fmt.Sprintf("%s: \n request: %s %s \n request body: %s \n response status: %s \n response responseBody: %s \n",
 		prettyTimeStamp(),
 		request.Method,
 		request.URL.Path,
+		requestBody,
 		response.Status,
-		bodyString)
+		string(responseBody))
 	appendToFile(log)
 }
 

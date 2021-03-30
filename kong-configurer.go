@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	. "kong-configurer/logging"
 	"kong-configurer/model"
-	"kong-configurer/service"
+	migrationService "kong-configurer/service"
 	"syscall"
 	"time"
 )
@@ -30,36 +30,36 @@ func init() {
 }
 func main() {
 	defer TimeTrack(time.Now(), "migration")
-	cfg := loadConfigFromFile()
-	cfg.Connection = loadConnectionCfgFromArgs()
-	cfg.Connection.KongPassword = getPassword(cfg.Connection.KongUser)
-	errs := cfg.Validate()
-	FailOnErrors(errs, "Invalid config file structure")
-	kongService := service.NewKongService(cfg)
+	migration := loadMigrationFromFile()
+	connCfg := loadConnCfg()
 	fmt.Print("processing... \n")
-	kongService.ProcessMigration()
+	migrationService.ProcessMigration(&migration, &connCfg)
 	fmt.Print("done\n")
 }
 
-func loadConnectionCfgFromArgs() model.ConnectionConfig {
-	return model.ConnectionConfig{
+func loadConnCfg() model.ConnectionConfig {
+	connCfg := model.ConnectionConfig{
 		KongUser: userNameParam,
 		KongPath: hostNameParam,
 	}
+	connCfg.KongPassword = loadPassword(connCfg.KongUser)
+	errs := connCfg.Validate()
+	FailOnErrors(errs, "Invalid config file structure")
+	return connCfg
 }
 
-func loadConfigFromFile() (cfg model.Config) {
+func loadMigrationFromFile() (migration model.Migration) {
 	if configFileParam == "" {
 		FailOnError(errors.New("config filename cannot be empty"), "Check a syntax")
 	}
 	file, err := ioutil.ReadFile(configFileParam)
 	FailOnError(err, "Can't reach configuration, ensure filename is correct")
-	err = json.Unmarshal(file, &cfg)
+	err = json.Unmarshal(file, &migration)
 	FailOnError(err, "Invalid config file structure")
 	return
 }
 
-func getPassword(usr string) string {
+func loadPassword(usr string) string {
 	if passwordParam == "" {
 		fmt.Printf("Enter password for kong user: '%s' \n", usr)
 		bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
