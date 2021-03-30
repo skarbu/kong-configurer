@@ -8,6 +8,7 @@ Batch operations including:
 - add services
 - add/remove/modify routes
 - add plugins on service and route level
+- all operation are appling only when app find difference between actual configuration and applied configuration.
 
 ### How to use it?
 
@@ -66,6 +67,9 @@ kong-configurer  -f {configFile} -h {kongHost}  -u {user} -p {password}
   ]
 }
 ```
+
+### LOGS
+After execution, logs are available as a file in working dir. 
 
 ### TODO
 - work with bigger set of routes (kong rest api provide pagination)
