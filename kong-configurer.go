@@ -25,7 +25,7 @@ func init() {
 	flag.StringVar(&configFileParam, "f", "", "relative path to json config file")
 	flag.StringVar(&userNameParam, "u", "", "kong user with admin privileges")
 	flag.StringVar(&passwordParam, "p", "", "password for kong user")
-	flag.StringVar(&hostNameParam, "h", "", "kong host with port")
+	flag.StringVar(&hostNameParam, "h", "", "kong url with port")
 	flag.Parse()
 }
 func main() {
